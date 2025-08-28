@@ -3,6 +3,7 @@ package gui;
 import com.marcosfshirafuchi.Main;
 import com.marcosfshirafuchi.model.entities.Department;
 import com.marcosfshirafuchi.model.services.DepartmentService;
+import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Utils;
 import javafx.collections.FXCollections;
@@ -27,7 +28,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class DepartmentListController implements Initializable {
+public class DepartmentListController implements Initializable, DataChangeListener {
 
     private DepartmentService service;
 
@@ -86,6 +87,7 @@ public class DepartmentListController implements Initializable {
             DepartmentFormController controller = loader.getController();
             controller.setDepartment(obj);
             controller.setDepartmentService(new DepartmentService());
+            controller.subscribeDataChangeListerner(this);
             controller.updateFormData();
 
             Stage dialogStage = new Stage();
@@ -103,5 +105,8 @@ public class DepartmentListController implements Initializable {
     }
 
 
-
+    @Override
+    public void onDataChanged() {
+        updateTableView();
+    }
 }
