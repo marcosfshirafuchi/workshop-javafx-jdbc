@@ -2,6 +2,7 @@ package gui;
 
 import com.marcosfshirafuchi.db.DbException;
 import com.marcosfshirafuchi.model.entities.Department;
+import com.marcosfshirafuchi.model.exceptions.ValidationException;
 import com.marcosfshirafuchi.model.services.DepartmentService;
 import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
@@ -17,9 +18,7 @@ import javafx.scene.control.TextField;
 
 import javax.swing.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class DepartmentFormController implements Initializable {
 
@@ -44,24 +43,24 @@ public class DepartmentFormController implements Initializable {
     @FXML
     private Button btCancel;
 
-    public void setDepartment(Department entity){
+    public void setDepartment(Department entity) {
         this.entity = entity;
     }
 
-    public void setDepartmentService(DepartmentService service){
+    public void setDepartmentService(DepartmentService service) {
         this.service = service;
     }
 
-    public void subscribeDataChangeListerner(DataChangeListener listener){
+    public void subscribeDataChangeListerner(DataChangeListener listener) {
         dataChangeListeners.add(listener);
     }
 
     @FXML
-    public void onBtSaveAction(ActionEvent event){
-        if (entity == null){
+    public void onBtSaveAction(ActionEvent event) {
+        if (entity == null) {
             throw new IllegalStateException("Entity was null");
         }
-        if (service == null){
+        if (service == null) {
             throw new IllegalStateException("Service was null");
         }
         try {
@@ -69,14 +68,16 @@ public class DepartmentFormController implements Initializable {
             service.saveOrUpdate(entity);
             notifyDataChangeListeners();
             Utils.currentStage(event).close();
+        }catch (ValidationException e){
+            setErrorMessages(e.getErrors());
         }
-        catch (DbException e){
+        catch (DbException e) {
             Alerts.showAlert("Error saving object", null, e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     private void notifyDataChangeListeners() {
-        for(DataChangeListener listener : dataChangeListeners){
+        for (DataChangeListener listener : dataChangeListeners) {
             listener.onDataChanged();
         }
     }
@@ -84,14 +85,23 @@ public class DepartmentFormController implements Initializable {
     private Department getFormData() {
         Department obj = new Department();
 
-        obj.setId(Utils.tryParseToInt(txtId.getText()));
-        obj.setName(txtName.getText());
+        ValidationException exception = new ValidationException("Validation error");
 
+        obj.setId(Utils.tryParseToInt(txtId.getText()));
+
+        String name = txtName.getText();
+        if (name == null || name.trim().isEmpty()) {
+            exception.addError("name", "Field can't be empty");
+        }
+        obj.setName(name);
+        if (exception.getErrors().size() > 0) {
+            throw exception;
+        }
         return obj;
     }
 
     @FXML
-    public void onBtCancelAction(ActionEvent event){
+    public void onBtCancelAction(ActionEvent event) {
         Utils.currentStage(event).close();
     }
 
@@ -100,16 +110,23 @@ public class DepartmentFormController implements Initializable {
         initializeNodes();
     }
 
-    private void initializeNodes(){
+    private void initializeNodes() {
         Constraints.setTextFieldInteger(txtId);
         Constraints.setTextFieldMaxLength(txtName, 30);
     }
 
-    public void  updateFormData(){
-        if(entity == null){
+    public void updateFormData() {
+        if (entity == null) {
             throw new IllegalStateException("Entity was null");
         }
         txtId.setText(String.valueOf(entity.getId()));
         txtName.setText(entity.getName());
+    }
+
+    private void setErrorMessages(Map<String, String> errors) {
+        Set<String> fields = errors.keySet();
+        if (fields.contains("name")) {
+            labelErrorName.setText(errors.get("name"));
+        }
     }
 }
