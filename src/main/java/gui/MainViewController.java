@@ -2,6 +2,7 @@ package gui;
 
 import com.marcosfshirafuchi.Main;
 import com.marcosfshirafuchi.model.services.DepartmentService;
+import com.marcosfshirafuchi.model.services.SellerService;
 import gui.util.Alerts;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -31,7 +32,10 @@ public class MainViewController implements Initializable {
 
     @FXML
     public void onMenuItemSellerAction(){
-        System.out.println("onMenuItemSellerAction");
+        loadView("/gui/SellerList.fxml", (SellerListController controller) ->{
+            controller.setSellerService(new SellerService());
+            controller.updateTableView();
+        });
     }
 
     @FXML
