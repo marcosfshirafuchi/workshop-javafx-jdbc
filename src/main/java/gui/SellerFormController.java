@@ -19,6 +19,7 @@ import javafx.scene.control.*;
 import javafx.util.Callback;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -122,6 +123,31 @@ public class SellerFormController implements Initializable {
             exception.addError("name", "Field can't be empty");
         }
         obj.setName(name);
+        String email = txtEmail.getText();
+        if (email == null || email.trim().isEmpty()) {
+            exception.addError("email", "Field can't be empty");
+        }
+        obj.setEmail(email);
+
+        if (dpBirthDate.getValue() == null) {
+            exception.addError("birthDate", "Field can't be empty");
+        } else {
+            Instant instant = Instant.from(dpBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+            obj.setBirthDate(Date.from(instant));
+        }
+
+        String salaryStr = txtBaseSalary.getText();
+        if (salaryStr == null || salaryStr.trim().isEmpty()) {
+            exception.addError("baseSalary", "Field can't be empty");
+        } else {
+            obj.setBaseSalary(Utils.tryParseToDouble(salaryStr));
+        }
+
+        if (comboBoxDepartment.getValue() == null) {
+            exception.addError("department", "Field can't be empty");
+        }
+        obj.setDepartment(comboBoxDepartment.getValue());
+
         if (exception.getErrors().size() > 0) {
             throw exception;
         }
@@ -178,9 +204,21 @@ public class SellerFormController implements Initializable {
 
     private void setErrorMessages(Map<String, String> errors) {
         Set<String> fields = errors.keySet();
-        if (fields.contains("name")) {
-            labelErrorName.setText(errors.get("name"));
-        }
+
+        // Limpa mensagens de erro anteriores
+        labelErrorName.setText("");
+        labelErrorEmail.setText("");
+        labelErrorBirthDate.setText("");
+        labelErrorBaseSalary.setText("");
+
+        // Define as novas mensagens de erro
+        labelErrorName.setText(errors.getOrDefault("name", ""));
+        labelErrorEmail.setText(errors.getOrDefault("email", ""));
+        labelErrorBirthDate.setText(errors.getOrDefault("birthDate", ""));
+        labelErrorBaseSalary.setText(errors.getOrDefault("baseSalary", ""));
+
+        // Para o erro de departamento, você precisará adicionar um Label 'labelErrorDepartment' no seu FXML
+        // if (fields.contains("department")) { labelErrorDepartment.setText(errors.get("department")); }
     }
 
     private void initializeComboBoxDepartment() {
