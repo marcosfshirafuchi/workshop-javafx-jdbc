@@ -3,6 +3,7 @@ package gui;
 import com.marcosfshirafuchi.Main;
 import com.marcosfshirafuchi.db.DbIntegrityException;
 import com.marcosfshirafuchi.model.entities.Seller;
+import com.marcosfshirafuchi.model.services.DepartmentService;
 import com.marcosfshirafuchi.model.services.SellerService;
 import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
@@ -108,7 +109,8 @@ public class SellerListController implements Initializable, DataChangeListener {
 
             SellerFormController controller = loader.getController();
             controller.setSeller(obj);
-            controller.setSellerService(new SellerService());
+            controller.setServices(new SellerService(), new DepartmentService());
+            controller.loadAssociatedObjects();
             controller.subscribeDataChangeListerner(this);
             controller.updateFormData();
 
@@ -120,7 +122,7 @@ public class SellerListController implements Initializable, DataChangeListener {
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.showAndWait();
         } catch (IOException e) {
-
+            e.printStackTrace();
             Alerts.showAlert("IOException", "Error loading view", e.getMessage(), Alert.AlertType.ERROR);
         }
     }
